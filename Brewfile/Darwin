@@ -1,0 +1,3 @@
+brew "adr-tools"
+brew "hyperkit"
+brew "minikube"
