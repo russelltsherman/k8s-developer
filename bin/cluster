@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+ACTION=${1:-"create"}
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+# set max cores to count of available cores
+MAX_CORES=$(sysctl -n hw.ncpu)
+# set max ram to 75% of available memory
+MAX_RAM=$(( $(sysctl -n hw.memsize) / $((1024**3)) / 4 * 3 ))
+PROFILE=$(basename $(git rev-parse --show-toplevel))
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+
+K8S_CTX=$PROFILE
+
+case $ACTION in
+  create)
+    minikube start \
+      --cpus="$MAX_CORES" \
+      --disk-size='100g' \
+      --driver='docker' \
+      --kubernetes-version='1.30.0' \
+      --memory="${MAX_RAM}g" \
+      --mount true --mount-string='/Users:/host' \
+      --nodes=1 \
+      --profile="$PROFILE"
+    ;;
+
+  delete|destroy|ip|pause|ssh|start|stop|tunnel|unpause)
+    minikube "$ACTION" --profile="$PROFILE"
+    ;;
+  *)
+    echo "unrecognied action"
+    echo ACTION $ACTION
+    echo DIR $DIR
+    echo MAX_CORES $MAX_CORES
+    echo MAX_RAM $MAX_RAM
+    echo PROJECT_ROOT $PROJECT_ROOT
+    echo K8S_CTX $K8S_CTX
+    exit 0
+    ;;
+esac
+
